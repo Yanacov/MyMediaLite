@@ -1,6 +1,6 @@
-// Copyright (C) 2013 João Vinagre, Zeno Gantner
-// Copyright (C) 2011, 2012 Zeno Gantner
-// Copyright (C) 2010 Steffen Rendle, Zeno Gantner
+// Copyright (C) 2013 João Vinagre
+// Copyright (C) 2010, 2011, 2012, 2013 Zeno Gantner
+// Copyright (C) 2010 Steffen Rendle
 //
 // This file is part of MyMediaLite.
 //
@@ -30,9 +30,6 @@ namespace MyMediaLite.ItemRecommendation
 	/// </remarks>
 	public class ItemKNN : KNN, IItemSimilarityProvider
 	{
-		///
-		protected override IBooleanMatrix DataMatrix { get { return Feedback.ItemMatrix; } }
-
 		///
 		public override void Train()
 		{

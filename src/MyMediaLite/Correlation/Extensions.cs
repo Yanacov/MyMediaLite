@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Zeno Gantner
+// Copyright (C) 2012, 2013 Zeno Gantner
 //
 // This file is part of MyMediaLite.
 //
@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using MyMediaLite.DataType;
 using MyMediaLite.IO;
 
 namespace MyMediaLite.Correlation
@@ -32,7 +33,7 @@ namespace MyMediaLite.Correlation
 		/// <param name="entities">a collection containing the numerical IDs of the entities to compare to</param>
 		/// <param name="q">score exponent</param>
 		/// <returns>the correlation sum</returns>
-		public static double SumUp(this ICorrelationMatrix correlation, int entity_id, ICollection<int> entities, float q = 1.0f)
+		public static double SumUp(this IMatrix<float> correlation, int entity_id, ICollection<int> entities, float q = 1.0f)
 		{
 			double result = 0;
 			foreach (int entity_id2 in entities)
@@ -40,13 +41,14 @@ namespace MyMediaLite.Correlation
 			return result;
 		}
 
+		// TODO consider getting rid of this
 		/// <summary>Sets all values in a matrix to zero</summary>
 		/// <param name='c'>a correlation matrix</param>
-		static public void SetZero(this ICorrelationMatrix c)
+		static public void SetZero(this IMatrix<float> c)
 		{
 			int size = c.NumberOfRows;
 			c.Resize(0);
-			c.Resize(size); // TODO consider doing this without resize
+			c.Resize(size);
 		}
 
 		/// <summary>Reads a SymmetricCorrelationMatrix from the lines of a StreamReader</summary>
@@ -61,7 +63,7 @@ namespace MyMediaLite.Correlation
 		/// <param name='correlation'>a correlation matrix</param>
 		/// <param name="reader">the StreamReader to read from</param>
 		static public void ReadSymmetricCorrelationMatrix(
-			this SymmetricCorrelationMatrix correlation,
+			this IMatrix<float> correlation,
 			StreamReader reader)
 		{
 			int num_entities = int.Parse(reader.ReadLine());
@@ -101,7 +103,7 @@ namespace MyMediaLite.Correlation
 		/// <param name='correlation'>a correlation matrix</param>
 		/// <param name="reader">the StreamReader to read from</param>
 		static public void ReadAsymmetricCorrelationMatrix(
-			this AsymmetricCorrelationMatrix correlation, StreamReader reader)
+			this IMatrix<float> correlation, StreamReader reader)
 		{
 			int num_entities = int.Parse(reader.ReadLine());
 			correlation.Resize(num_entities);
@@ -132,7 +134,7 @@ namespace MyMediaLite.Correlation
 		/// <param name="c">a correlation matrix</param>
 		/// <param name="entity_id">the entity ID</param>
 		/// <returns>a sorted list of all entities that are positively correlated to entitiy_id</returns>
-		public static IList<int> GetPositivelyCorrelatedEntities(this ICorrelationMatrix c, int entity_id)
+		public static IList<int> GetPositivelyCorrelatedEntities(this IMatrix<float> c, int entity_id)
 		{
 			int num_entities = c.NumberOfRows;
 			var result = new List<int>();
@@ -146,19 +148,19 @@ namespace MyMediaLite.Correlation
 		}
 
 		/// <summary>Get the k nearest neighbors of a given entity</summary>
-		/// <param name="c">a correlation matrix</param>
+		/// <param name="m">a correlation matrix</param>
 		/// <param name="entity_id">the numerical ID of the entity</param>
 		/// <param name="k">the neighborhood size</param>
 		/// <returns>a sorted list containing the numerical IDs of the k nearest neighbors</returns>
-		public static IList<int> GetNearestNeighbors(this ICorrelationMatrix c, int entity_id, uint k)
+		public static IList<int> GetNearestNeighbors(this IMatrix<float> m, int entity_id, uint k)
 		{
-			int num_entities = c.NumberOfRows;
+			int num_entities = m.NumberOfRows;
 			var entities = new List<int>();
 			for (int i = 0; i < num_entities; i++)
 				entities.Add(i);
 
 			entities.Remove(entity_id);
-			entities.Sort(delegate(int i, int j) { return c[j, entity_id].CompareTo(c[i, entity_id]); });
+			entities.Sort(delegate(int i, int j) { return m[j, entity_id].CompareTo(m[i, entity_id]); });
 
 			if (k < entities.Count)
 				return entities.GetRange(0, (int) k).ToArray();

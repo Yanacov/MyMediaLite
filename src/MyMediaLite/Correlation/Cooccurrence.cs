@@ -1,4 +1,4 @@
-// Copyright (C) 2011, 2012 Zeno Gantner
+// Copyright (C) 2011, 2012, 2013 Zeno Gantner
 // Copyright (C) 2010 Steffen Rendle, Zeno Gantner
 //
 // This file is part of MyMediaLite.
@@ -24,14 +24,10 @@ namespace MyMediaLite.Correlation
 	/// <summary>Class for storing and computing the co-counts</summary>
 	/// <remarks>
 	/// </remarks>
-	public sealed class Cooccurrence : BinaryDataSymmetricCorrelationMatrix
+	public sealed class Cooccurrence : IBinaryCorrelation
 	{
-		/// <summary>Creates an object of type Cooccurrence</summary>
-		/// <param name="num_entities">the number of entities</param>
-		public Cooccurrence(int num_entities) : base(num_entities) { }
-
 		///
-		protected override float ComputeCorrelationFromOverlap(float overlap, float count_x, float count_y)
+		protected float ComputeFromOverlap(float overlap, float count_x, float count_y)
 		{
 			return overlap;
 		}

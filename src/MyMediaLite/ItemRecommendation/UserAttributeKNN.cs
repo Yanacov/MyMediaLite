@@ -1,4 +1,4 @@
-// Copyright (C) 2010, 2011, 2012 Zeno Gantner
+// Copyright (C) 2010, 2011, 2012, 2013 Zeno Gantner
 //
 // This file is part of MyMediaLite.
 //
@@ -25,9 +25,6 @@ namespace MyMediaLite.ItemRecommendation
 	/// </remarks>
 	public class UserAttributeKNN : UserKNN, IUserAttributeAwareRecommender
 	{
-		///
-		protected override IBooleanMatrix DataMatrix { get { return this.user_attributes; } }
-
 		///
 		public IBooleanMatrix UserAttributes
 		{

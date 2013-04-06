@@ -1,4 +1,4 @@
-// Copyright (C) 2010, 2011, 2012 Zeno Gantner
+// Copyright (C) 2010, 2011, 2012, 2013 Zeno Gantner
 //
 // This file is part of MyMediaLite.
 //
@@ -60,7 +60,7 @@ namespace MyMediaLite.RatingPrediction
 		}
 
 		/// <summary>The kind of correlation to use</summary>
-		public RatingCorrelationType Correlation { get; set; }
+		public string Correlation { get; set; }
 
 		/// <summary>The entity type of the neighbors used for rating prediction</summary>
 		abstract protected EntityType Entity { get; }
@@ -79,7 +79,9 @@ namespace MyMediaLite.RatingPrediction
 		public uint NumIter { get { return baseline_predictor.NumIter; } set { baseline_predictor.NumIter = value; } }
 
 		/// <summary>Correlation matrix over some kind of entity</summary>
-		protected ICorrelationMatrix correlation_matrix;
+		protected IMatrix<float> correlation_matrix;
+
+		protected ICorrelation correlation;
 
 		/// <summary>Alpha parameter for BidirectionalConditionalProbability, or shrinkage parameter for Pearson</summary>
 		public float Alpha { get; set; }
@@ -90,45 +92,41 @@ namespace MyMediaLite.RatingPrediction
 		/// <summary>underlying baseline predictor</summary>
 		protected UserItemBaseline baseline_predictor = new UserItemBaseline();
 
-		void InitModel()
+		ICorrelation CreateCorrelation()
 		{
-			int num_entities = 0;
 			switch (Correlation)
 			{
-				case RatingCorrelationType.BinaryCosine:
-					correlation_matrix = new BinaryCosine(num_entities);
-					break;
-				case RatingCorrelationType.Jaccard:
-					correlation_matrix = new Jaccard(num_entities);
-					break;
-				case RatingCorrelationType.ConditionalProbability:
-					correlation_matrix = new ConditionalProbability(num_entities);
-					break;
-				case RatingCorrelationType.BidirectionalConditionalProbability:
-					correlation_matrix = new BidirectionalConditionalProbability(num_entities, Alpha);
-					break;
-				case RatingCorrelationType.Cooccurrence:
-					correlation_matrix = new Cooccurrence(num_entities);
-					break;
-				case RatingCorrelationType.Pearson:
-					correlation_matrix = new Pearson(num_entities, Alpha);
-					break;
+				case "BinaryCosine":
+					return new BinaryCosine();
+				case "Jaccard":
+					return new Jaccard();
+				case "ConditionalProbability":
+					return new ConditionalProbability(); break;
+				case "BidirectionalConditionalProbability":
+					return new BidirectionalConditionalProbability(Alpha); break;
+				case "Cooccurrence":
+					return new Cooccurrence(); break;
+				case "Pearson":
+					return new Pearson(Alpha); break;
 				default:
-					throw new NotImplementedException(string.Format("Support for {0} is not implemented", Correlation));
+					throw new NotImplementedException(string.Format("{0} does not support correlation '{1}'", this.GetType().Name, Correlation));
 			}
-			if (correlation_matrix is IBinaryDataCorrelationMatrix)
-				((IBinaryDataCorrelationMatrix) correlation_matrix).Weighted = WeightedBinary;
 		}
 
+		protected void InitModel()
+		{
+			correlation = CreateCorrelation();
+		}
+		
+		// TODO maybe make a property?
+		protected ICorrelationBuilder correlation_builder;
+		
 		///
 		public override void Train()
 		{
 			baseline_predictor.Train();
 			InitModel();
-			if (correlation_matrix is IBinaryDataCorrelationMatrix)
-				((IBinaryDataCorrelationMatrix) correlation_matrix).ComputeCorrelations(BinaryDataMatrix);
-			else
-				((IRatingCorrelationMatrix) correlation_matrix).ComputeCorrelations(Ratings, Entity);
+			correlation_matrix = correlation_builder.Build(interactions);
 		}
 
 		///
@@ -136,7 +134,7 @@ namespace MyMediaLite.RatingPrediction
 		{
 			baseline_predictor.SaveModel(filename + "-global-effects");
 
-			using ( StreamWriter writer = Model.GetWriter(filename, this.GetType(), "3.03") )
+			using ( StreamWriter writer = Model.GetWriter(filename, this.GetType(), "4.00") )
 			{
 				writer.WriteLine(Correlation);
 				correlation_matrix.Write(writer);
@@ -150,7 +148,7 @@ namespace MyMediaLite.RatingPrediction
 
 			using ( StreamReader reader = Model.GetReader(filename, this.GetType()) )
 			{
-				Correlation = (RatingCorrelationType) Enum.Parse(typeof(RatingCorrelationType), reader.ReadLine());
+				Correlation = reader.ReadLine();
 				InitModel();
 
 				if (correlation_matrix is SymmetricCorrelationMatrix)

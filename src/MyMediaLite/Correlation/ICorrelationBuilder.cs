@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Zeno Gantner
+// Copyright (C) 2013 Zeno Gantner
 // 
 // This file is part of MyMediaLite.
 // 
@@ -15,27 +15,18 @@
 //  You should have received a copy of the GNU General Public License
 //  along with MyMediaLite.  If not, see <http://www.gnu.org/licenses/>.
 // 
+using System;
+using System.Collections.Generic;
+using MyMediaLite.Data;
+using MyMediaLite.DataType;
+
 namespace MyMediaLite.Correlation
 {
-	/// <summary>Correlations based on rating data</summary>
-	public enum RatingCorrelationType
+	public interface ICorrelationBuilder
 	{
-		/// <summary>binary cosine similarity</summary>
-		BinaryCosine,
-		/// <summary>Jaccard index (Tanimoto coefficient)</summary>
-		Jaccard,
-		/// <summary>conditional probability</summary>
-		ConditionalProbability,
-		/// <summary>bidirectional conditional probability</summary>
-		BidirectionalConditionalProbability,
-		/// <summary>cooccurrence counts</summary>
-		Cooccurrence,
-		/// <summary>use a similarity provider to get the correlation</summary>
-		SimilarityProvider,
-		/// <summary>use stored/precomputed correlation</summary>
-		Stored,
-		/// <summary>Pearson correlation</summary>
-		Pearson
+		IMatrix<float> Build(IInteractions interactions);
+		IMatrix<float> Build(IBooleanMatrix boolean_matrix);
+		void UpdateRows(IMatrix<float> correlation_matrix, IInteractions interactions, ICollection<int> update_entities);
 	}
 }
 

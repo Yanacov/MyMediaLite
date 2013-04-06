@@ -1,4 +1,4 @@
-// Copyright (C) 2011, 2012 Zeno Gantner
+// Copyright (C) 2011, 2012, 2013 Zeno Gantner
 //
 // This file is part of MyMediaLite.
 //
@@ -38,8 +38,10 @@ namespace MyMediaLite.DataType
 		int NumberOfColumns { get; }
 
 		/// <summary>True if the matrix is stored in a symmetric manner, false otherwise</summary>
-		/// <remarks>Also true for skew symmetric matrices that exploit this property in order to save memory</remarks>
 		bool IsSymmetric { get; }
+
+		/// <summary>True if the matrix is stored in a skew-symmetric manner, false otherwise</summary>
+		bool IsSkewSymmetric { get; }
 
 		/// <summary>Get the transpose of the matrix, i.e. a matrix where rows and columns are interchanged</summary>
 		/// <returns>the transpose of the matrix (copy)</returns>

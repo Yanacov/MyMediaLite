@@ -1,4 +1,4 @@
-// Copyright (C) 2011, 2012 Zeno Gantner
+// Copyright (C) 2011, 2012, 2013 Zeno Gantner
 // Copyright (C) 2010 Steffen Rendle, Zeno Gantner
 //
 // This file is part of MyMediaLite.
@@ -21,18 +21,16 @@ using MyMediaLite.DataType;
 
 namespace MyMediaLite.Correlation
 {
-	/// <summary>Class for storing cosine similarities</summary>
+	/// <summary>Class for computing cosine similarities</summary>
 	/// <remarks>
 	/// http://en.wikipedia.org/wiki/Cosine_similarity
 	/// </remarks>
-	public sealed class BinaryCosine : BinaryDataSymmetricCorrelationMatrix
+	public sealed class BinaryCosine : IBinaryCorrelation
 	{
-		/// <summary>Creates an object of type Cosine</summary>
-		/// <param name="num_entities">the number of entities</param>
-		public BinaryCosine(int num_entities) : base(num_entities) { }
+		public bool IsSymmetric { get { return true; } }
 
 		///
-		protected override float ComputeCorrelationFromOverlap(float overlap, float count_x, float count_y)
+		public float ComputeFromOverlap(float overlap, float count_x, float count_y)
 		{
 			double size_product = count_x * count_y;
 			if (size_product > 0.0)

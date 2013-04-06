@@ -1,4 +1,4 @@
-// Copyright (C) 2013 João Vinagre, Zeno Gantner
+// Copyright (C) 2013 João Vinagre
 // Copyright (C) 2010, 2011, 2012, 2013 Zeno Gantner
 //
 // This file is part of MyMediaLite.
@@ -56,10 +56,7 @@ namespace MyMediaLite.ItemRecommendation
 		public float Q { get; set; }
 
 		/// <summary>The kind of correlation to use</summary>
-		public BinaryCorrelationType Correlation { get; set; }
-
-		/// <summary>data matrix to learn the correlation from</summary>
-		protected abstract IBooleanMatrix DataMatrix { get; }
+		public string Correlation { get; set; }
 
 		/// <summary>The number of neighbors to take into account for prediction</summary>
 		protected uint k = 80;
@@ -68,42 +65,37 @@ namespace MyMediaLite.ItemRecommendation
 		protected IList<IList<int>> nearest_neighbors;
 
 		/// <summary>Correlation matrix over some kind of entity, e.g. users or items</summary>
-		protected IBinaryDataCorrelationMatrix correlation_matrix;
+		protected IMatrix<float> correlation_matrix;
+
+		protected ICorrelationBuilder correlation_builder;
 
 		/// <summary>Default constructor</summary>
 		public KNN()
 		{
-			Correlation = BinaryCorrelationType.Cosine;
+			Correlation = "Cosine";
 			Alpha = 0.5f;
 			Q = 1.0f;
 			UpdateUsers = true;
 			UpdateItems = true;
 		}
 
-		void InitModel()
+		protected IBinaryCorrelation CreateCorrelation()
 		{
-			int num_entities = 0;
 			switch (Correlation)
 			{
-				case BinaryCorrelationType.Cosine:
-					correlation_matrix = new BinaryCosine(num_entities);
-					break;
-				case BinaryCorrelationType.Jaccard:
-					correlation_matrix = new Jaccard(num_entities);
-					break;
-				case BinaryCorrelationType.ConditionalProbability:
-					correlation_matrix = new ConditionalProbability(num_entities);
-					break;
-				case BinaryCorrelationType.BidirectionalConditionalProbability:
-					correlation_matrix = new BidirectionalConditionalProbability(num_entities, Alpha);
-					break;
-				case BinaryCorrelationType.Cooccurrence:
-					correlation_matrix = new Cooccurrence(num_entities);
-					break;
+				case "Cosine":
+					return new BinaryCosine();
+				case "Jaccard":
+					return new Jaccard();
+				case "ConditionalProbability":
+					return new ConditionalProbability();
+				case "BidirectionalConditionalProbability":
+					return new BidirectionalConditionalProbability(Alpha);
+				case "Cooccurrence":
+					return new Cooccurrence();
 				default:
-					throw new NotImplementedException(string.Format("{0} does not support for {1}.", this.GetType().Name, Correlation));
+					throw new NotImplementedException(string.Format("{0} does not support correlation '{1}'.", this.GetType().Name, Correlation));
 			}
-			correlation_matrix.Weighted = Weighted;
 		}
 
 		/// <summary>Update the correlation matrix for the given feedback</summary>
@@ -114,16 +106,7 @@ namespace MyMediaLite.ItemRecommendation
 			foreach (var t in feedback)
 				update_entities.Add(t.Item1);
 
-			foreach (int i in update_entities)
-			{
-				for (int j = 0; j < correlation_matrix.NumEntities; j++)
-				{
-					if (j < i && correlation_matrix.IsSymmetric && update_entities.Contains(j))
-						continue;
-
-					correlation_matrix[i, j] = correlation_matrix.ComputeCorrelation(DataMatrix.GetEntriesByRow(i), DataMatrix.GetEntriesByRow(j));
-				}
-			}
+			correlation_builder.UpdateRows(correlation_matrix, Interactions, update_entities);
 			RecomputeNeighbors(update_entities);
 		}
 
@@ -133,17 +116,18 @@ namespace MyMediaLite.ItemRecommendation
 				nearest_neighbors[entity_id] = correlation_matrix.GetNearestNeighbors(entity_id, k);
 		}
 
+		protected abstract void InitModel();
+
 		///
 		public override void Train()
 		{
-			InitModel();
-			correlation_matrix.ComputeCorrelations(DataMatrix);
+			correlation_matrix = correlation_builder.Build(Interactions);
 		}
 
 		///
 		public override void SaveModel(string filename)
 		{
-			using ( StreamWriter writer = Model.GetWriter(filename, this.GetType(), "3.03") )
+			using ( StreamWriter writer = Model.GetWriter(filename, this.GetType(), "4.0") )
 			{
 				writer.WriteLine(Correlation);
 				writer.WriteLine(nearest_neighbors.Count);
@@ -157,32 +141,7 @@ namespace MyMediaLite.ItemRecommendation
 		///
 		public override void LoadModel(string filename)
 		{
-			using ( StreamReader reader = Model.GetReader(filename, this.GetType()) )
-			{
-				Correlation = (BinaryCorrelationType) Enum.Parse(typeof(BinaryCorrelationType), reader.ReadLine());
-
-				int num_entities = int.Parse(reader.ReadLine());
-				var nearest_neighbors = new int[num_entities][];
-				for (int i = 0; i < nearest_neighbors.Length; i++)
-				{
-					string[] numbers = reader.ReadLine().Split(' ');
-
-					nearest_neighbors[i] = new int[numbers.Length];
-					for (int j = 0; j < numbers.Length; j++)
-						nearest_neighbors[i][j] = int.Parse(numbers[j]);
-				}
-
-				InitModel();
-				if (correlation_matrix is SymmetricCorrelationMatrix)
-					((SymmetricCorrelationMatrix) correlation_matrix).ReadSymmetricCorrelationMatrix(reader);
-				else if (correlation_matrix is AsymmetricCorrelationMatrix)
-					((AsymmetricCorrelationMatrix) correlation_matrix).ReadAsymmetricCorrelationMatrix(reader);
-				else
-					throw new NotSupportedException("Unknown correlation type: " + correlation_matrix.GetType());
-
-				this.k = (uint) nearest_neighbors[0].Length;
-				this.nearest_neighbors = nearest_neighbors;
-			}
+			throw new NotImplementedException();
 		}
 
 		/// <summary>Resizes the nearest neighbors list if necessary</summary>

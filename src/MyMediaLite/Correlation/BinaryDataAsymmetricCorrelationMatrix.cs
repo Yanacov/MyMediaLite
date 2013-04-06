@@ -22,21 +22,13 @@ using MyMediaLite.DataType;
 
 namespace MyMediaLite.Correlation
 {
-	/// <summary>Class with commoin routines for asymmetric correlations that are learned from binary data</summary>
-	public abstract class BinaryDataAsymmetricCorrelationMatrix : AsymmetricCorrelationMatrix, IBinaryDataCorrelationMatrix
+	public abstract class BinaryCorrelation : IBinaryCorrelation
 	{
 		///
-		public bool Weighted { get; set; }
-
-		/// <summary>Creates an object of type ConditionalProbability</summary>
-		/// <param name="num_entities">the number of entities</param>
-		public BinaryDataAsymmetricCorrelationMatrix(int num_entities) : base(num_entities) { }
+		protected abstract float ComputeFromOverlap(float overlap, float count_x, float count_y);
 
 		///
-		protected abstract float ComputeCorrelationFromOverlap(float overlap, float count_x, float count_y);
-
-		///
-		public void ComputeCorrelations(IBooleanMatrix entity_data)
+		public void Compute(IBooleanMatrix entity_data)
 		{
 			Resize(entity_data.NumberOfRows);
 

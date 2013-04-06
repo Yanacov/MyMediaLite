@@ -1,5 +1,4 @@
-// Copyright (C) 2011, 2012, 2013 Zeno Gantner
-// Copyright (C) 2010 Steffen Rendle, Zeno Gantner
+// Copyright (C) 2013 Zeno Gantner
 //
 // This file is part of MyMediaLite.
 //
@@ -15,29 +14,19 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with MyMediaLite.  If not, see <http://www.gnu.org/licenses/>.
+//
 using System;
-using System.Collections.Generic;
-using MyMediaLite.DataType;
 
 namespace MyMediaLite.Correlation
 {
-	/// <summary>Class for storing and computing the Jaccard index</summary>
-	/// <remarks>
-	/// The Jaccard index is also called the Tanimoto coefficient.
-	///
-	/// http://en.wikipedia.org/wiki/Jaccard_index
-	/// </remarks>
-	public sealed class Jaccard : IBinaryCorrelation
+	public interface ICorrelation
 	{
-		public bool IsSymmetric { get { return true; } }
+		bool IsSymmetric { get; }
+		float Compute(IInteractions interactions, EntityType entity_type, int i, int j);
+		float Compute(IInteractions interactions, EntityType entity_type, IList<Tuple<int, float>> entity_ratings, int j);
 
-		///
-		public float ComputeFromOverlap(float overlap, float count_x, float count_y)
-		{
-			if (overlap != 0)
-				return overlap / (count_x + count_y - overlap);
-			else
-				return 0.0f;
-		}
+		// TODO maybe optional?
+		float ComputeOnePass(IInteractions interactions, EntityType entity_type);
 	}
 }
+

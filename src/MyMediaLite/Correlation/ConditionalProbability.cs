@@ -1,4 +1,4 @@
-// Copyright (C) 2011, 2012 Zeno Gantner
+// Copyright (C) 2011, 2012, 2013 Zeno Gantner
 // Copyright (C) 2010 Steffen Rendle, Zeno Gantner
 //
 // This file is part of MyMediaLite.
@@ -22,17 +22,13 @@ using MyMediaLite.DataType;
 
 namespace MyMediaLite.Correlation
 {
-	/// <summary>Class for storing and computing conditional probabilities</summary>
+	/// <summary>Class for computing conditional probabilities</summary>
 	/// <remarks>
 	/// </remarks>
-	public sealed class ConditionalProbability : BinaryDataAsymmetricCorrelationMatrix
+	public sealed class ConditionalProbability : IBinaryCorrelation
 	{
-		/// <summary>Creates an object of type ConditionalProbability</summary>
-		/// <param name="num_entities">the number of entities</param>
-		public ConditionalProbability(int num_entities) : base(num_entities) { }
-
 		///
-		protected override float ComputeCorrelationFromOverlap(float overlap, float count_x, float count_y)
+		protected float ComputeFromOverlap(float overlap, float count_x, float count_y)
 		{
 			if (count_x != 0)
 				return overlap / count_x;

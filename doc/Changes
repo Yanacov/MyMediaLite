@@ -1,4 +1,4 @@
-4.00
+4.00	2013-
 	recommenders
 	 - MostPopular: take ByUser property always into account when doing
            incremental updates
@@ -6,6 +6,10 @@
            - remove WithReplacement property
            - move BPR sampling logic into namespace ItemRecommender.BPR
 	 - remove MultiCoreBPRMF
+	correlations
+         - use different classes for computing, building, and storing
+           correlation matrices
+         - TODO look at related tickets
 
 3.08	2013-03-
 	recommenders

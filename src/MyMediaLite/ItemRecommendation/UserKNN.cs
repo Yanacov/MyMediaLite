@@ -1,5 +1,5 @@
-// Copyright (C) 2013 João Vinagre, Zeno Gantner
-// Copyright (C) 2010, 2011, 2012 Zeno Gantner
+// Copyright (C) 2013 João Vinagre
+// Copyright (C) 2010, 2011, 2012, 2013 Zeno Gantner
 //
 // This file is part of MyMediaLite.
 //
@@ -29,9 +29,11 @@ namespace MyMediaLite.ItemRecommendation
 	/// </remarks>
 	public class UserKNN : KNN, IUserSimilarityProvider, IFoldInItemRecommender
 	{
-		///
-		protected override IBooleanMatrix DataMatrix { get { return Feedback.UserMatrix; } }
-
+		protected override void InitModel()
+		{
+			correlation_builder = new UserCorrelationBuilder(CreateCorrelation());
+		}
+		
 		///
 		public override void Train()
 		{

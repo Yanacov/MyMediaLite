@@ -1,4 +1,4 @@
-// Copyright (C) 2011, 2012 Zeno Gantner
+// Copyright (C) 2011, 2012, 2013 Zeno Gantner
 // Copyright (C) 2010 Steffen Rendle, Zeno Gantner
 //
 // This file is part of MyMediaLite.
@@ -22,20 +22,19 @@ using MyMediaLite.DataType;
 
 namespace MyMediaLite.Correlation
 {
-	/// <summary>Class for storing and computing 'bi-directional' conditional probabilities</summary>
+	/// <summary>Class for computing 'bi-directional' conditional probabilities</summary>
 	/// <remarks>
 	/// TODO LIT
 	/// </remarks>
 	///
-	public sealed class BidirectionalConditionalProbability : BinaryDataAsymmetricCorrelationMatrix
+	public sealed class BidirectionalConditionalProbability : IBinaryCorrelation
 	{
 		readonly float alpha;
 		readonly float one_minus_alpha;
 
 		/// <summary>Creates an object of type BidirectionalConditionalProbability</summary>
-		/// <param name="num_entities">the number of entities</param>
 		/// <param name="alpha">alpha parameter</param>
-		public BidirectionalConditionalProbability(int num_entities, float alpha) : base(num_entities)
+		public BidirectionalConditionalProbability(float alpha)
 		{
 			if (alpha < 0 || alpha > 1)
 				throw new ArgumentOutOfRangeException("alpha must be in range [0, 1]");
@@ -45,7 +44,7 @@ namespace MyMediaLite.Correlation
 		}
 
 		///
-		protected override float ComputeCorrelationFromOverlap(float overlap, float count_x, float count_y)
+		protected float ComputeFromOverlap(float overlap, float count_x, float count_y)
 		{
 			if (count_x == 0 || count_y == 0)
 				return 0.0f;

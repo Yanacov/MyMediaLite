@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Zeno Gantner
+// Copyright (C) 2013 Zeno Gantner
 // 
 // This file is part of MyMediaLite.
 // 
@@ -15,25 +15,15 @@
 //  You should have received a copy of the GNU General Public License
 //  along with MyMediaLite.  If not, see <http://www.gnu.org/licenses/>.
 // 
+using System;
+using System.Collections.Generic;
+using MyMediaLite.Data;
+using MyMediaLite.Taxonomy;
+
 namespace MyMediaLite.Correlation
 {
-	/// <summary>Correlations based on binary data</summary>
-	public enum BinaryCorrelationType
+	public interface IRatingCorrelation : ICorrelation
 	{
-		/// <summary>cosine similarity</summary>
-		Cosine,
-		/// <summary>Jaccard index (Tanimoto coefficient)</summary>
-		Jaccard,
-		/// <summary>conditional probability</summary>
-		ConditionalProbability,
-		/// <summary>bidirectional conditional probability</summary>
-		BidirectionalConditionalProbability,
-		/// <summary>cooccurrence counts</summary>
-		Cooccurrence,
-		/// <summary>use a similarity provider to get the correlation</summary>
-		SimilarityProvider,
-		/// <summary>use stored/precomputed correlation</summary>
-		Stored
 	}
 }
 

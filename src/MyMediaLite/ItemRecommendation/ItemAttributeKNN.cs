@@ -26,9 +26,6 @@ namespace MyMediaLite.ItemRecommendation
 	public class ItemAttributeKNN : ItemKNN, IItemAttributeAwareRecommender
 	{
 		///
-		protected override IBooleanMatrix DataMatrix { get { return this.item_attributes; } }
-
-		///
 		public IBooleanMatrix ItemAttributes
 		{
 			get { return this.item_attributes; }

@@ -1,5 +1,4 @@
-// Copyright (C) 2011, 2012, 2013 Zeno Gantner
-// Copyright (C) 2010 Steffen Rendle, Zeno Gantner
+// Copyright (C) 2013 Zeno Gantner
 //
 // This file is part of MyMediaLite.
 //
@@ -15,29 +14,37 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with MyMediaLite.  If not, see <http://www.gnu.org/licenses/>.
+//
 using System;
 using System.Collections.Generic;
+using MyMediaLite.Data;
 using MyMediaLite.DataType;
 
 namespace MyMediaLite.Correlation
 {
-	/// <summary>Class for storing and computing the Jaccard index</summary>
-	/// <remarks>
-	/// The Jaccard index is also called the Tanimoto coefficient.
-	///
-	/// http://en.wikipedia.org/wiki/Jaccard_index
-	/// </remarks>
-	public sealed class Jaccard : IBinaryCorrelation
+	public class UserCorrelationBuilder : ICorrelationBuilder
 	{
-		public bool IsSymmetric { get { return true; } }
+		ICorrelation correlation;
 
-		///
-		public float ComputeFromOverlap(float overlap, float count_x, float count_y)
+		public UserCorrelationBuilder(ICorrelation correlation)
 		{
-			if (overlap != 0)
-				return overlap / (count_x + count_y - overlap);
-			else
-				return 0.0f;
+			this.correlation = correlation;
 		}
+
+		public void UpdateRows(IMatrix<float> correlation_matrix, IInteractions interactions, ICollection<int> update_entities)
+		{
+			foreach (int i in update_entities)
+			{
+				for (int j = 0; j < correlation_matrix.NumEntities; j++)
+				{
+					if (j < i && correlation_matrix.IsSymmetric && other_update_entities.Contains(j))
+						continue;
+
+					correlation_matrix[i, j] = correlation.Compute(interactions.ByUser(i).Items, interactions.ByUser(j).Items);
+				}
+			}
+		}
+
 	}
 }
+

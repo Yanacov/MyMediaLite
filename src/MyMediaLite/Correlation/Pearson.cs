@@ -1,4 +1,4 @@
-// Copyright (C) 2010, 2011, 2012 Zeno Gantner
+// Copyright (C) 2010, 2011, 2012, 2013 Zeno Gantner
 //
 // This file is part of MyMediaLite.
 //
@@ -55,23 +55,24 @@ namespace MyMediaLite.Correlation
 	///     </list>
 	///   </para>
 	/// </remarks>
-	public sealed class Pearson : SymmetricCorrelationMatrix, IRatingCorrelationMatrix
+	public sealed class Pearson : IRatingCorrelation
 	{
+		public bool IsSymmetric { get { return true; } }
+
 		/// <summary>shrinkage parameter, if set to 0 we have the standard Pearson correlation without shrinkage</summary>
-		public float Shrinkage { get; set; }
+		float Shrinkage { get; set; }
 
 		/// <summary>Constructor. Create a Pearson correlation matrix</summary>
-		/// <param name="num_entities">the number of entities</param>
 		/// <param name="shrinkage">shrinkage parameter</param>
-		public Pearson(int num_entities, float shrinkage) : base(num_entities)
+		public Pearson(float shrinkage)
 		{
 			Shrinkage = shrinkage;
 		}
 
-		// TODO get rid of some code here
+		// TODO de-duplicate code
 
 		///
-		public float ComputeCorrelation(IRatings ratings, EntityType entity_type, int i, int j)
+		public float Compute(IRatings ratings, EntityType entity_type, int i, int j)
 		{
 			if (i == j)
 				return 1;
@@ -129,7 +130,7 @@ namespace MyMediaLite.Correlation
 		}
 
 		///
-		public float ComputeCorrelation(IRatings ratings, EntityType entity_type, IList<Tuple<int, float>> entity_ratings, int j)
+		public float Compute(IRatings ratings, EntityType entity_type, IList<Tuple<int, float>> entity_ratings, int j)
 		{
 			IList<int> indexes2 = (entity_type == EntityType.USER) ? ratings.ByUser[j] : ratings.ByItem[j];
 
@@ -181,10 +182,10 @@ namespace MyMediaLite.Correlation
 		}
 
 		///
-		public void ComputeCorrelations(IRatings ratings, EntityType entity_type)
+		public IMatrix<float> Build(IRatings ratings, EntityType entity_type)
 		{
 			int num_entities = (entity_type == EntityType.USER) ? ratings.MaxUserID + 1 : ratings.MaxItemID + 1;
-			Resize(num_entities);
+			var matrix = new SymmetricMatrix<float>(num_entities);
 
 			if (entity_type != EntityType.USER && entity_type != EntityType.ITEM)
 				throw new ArgumentException("entity type must be either USER or ITEM, not " + entity_type);
@@ -225,7 +226,7 @@ namespace MyMediaLite.Correlation
 
 			// the diagonal of the correlation matrix
 			for (int i = 0; i < num_entities; i++)
-				this[i, i] = 1;
+				matrix[i, i] = 1;
 
 			for (int i = 0; i < num_entities; i++)
 				for (int j = i + 1; j < num_entities; j++)
@@ -234,7 +235,7 @@ namespace MyMediaLite.Correlation
 
 					if (n < 2)
 					{
-						this[i, j] = 0;
+						matrix[i, j] = 0;
 						continue;
 					}
 
@@ -243,13 +244,15 @@ namespace MyMediaLite.Correlation
 					double denominator = Math.Sqrt( (n * ii_sums[i, j] - i_sums[i, j] * i_sums[i, j]) * (n * jj_sums[i, j] - j_sums[i, j] * j_sums[i, j]) );
 					if (denominator == 0)
 					{
-						this[i, j] = 0;
+						matrix[i, j] = 0;
 						continue;
 					}
 
 					double pmcc = numerator / denominator;
-					this[i, j] = (float) (pmcc * ((n - 1) / (n - 1 + Shrinkage)));
+					matrix[i, j] = (float) (pmcc * ((n - 1) / (n - 1 + Shrinkage)));
 				}
+
+			return matrix;
 		}
 	}
 }
