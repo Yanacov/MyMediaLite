@@ -21,7 +21,7 @@ namespace MyMediaLite.Correlation
 {
 	public class AttributeCorrelationBuilder : ICorrelationBuilder
 	{
-		public AttributeCorrelationBuilder ()
+		public AttributeCorrelationBuilder()
 		{
 		}
 	}

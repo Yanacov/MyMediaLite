@@ -30,7 +30,12 @@ namespace MyMediaLite.Correlation
 		{
 			this.correlation = correlation;
 		}
-
+		
+		public void Build(IInteractions interactions)
+		{
+			
+		}
+		
 		public void UpdateRows(IMatrix<float> correlation_matrix, IInteractions interactions, ICollection<int> update_entities)
 		{
 			foreach (int i in update_entities)
